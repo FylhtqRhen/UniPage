@@ -1,0 +1,12 @@
+{
+    "name": "andrey/new",
+    "type": "project",
+    "require": {
+        "simplehtmldom/simplehtmldom": "dev-master",
+      "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+      "ext-pdo": "*"
+    },
+    "minimum-stability": "dev"
+}
