@@ -6,7 +6,11 @@
       "ext-curl": "*",
         "ext-dom": "*",
         "ext-libxml": "*",
-      "ext-pdo": "*"
+      "ext-pdo": "*",
+        "guzzlehttp/guzzle": "^7.4@dev"
     },
+    "scripts": {
+
+  },
     "minimum-stability": "dev"
 }
