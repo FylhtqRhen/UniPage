@@ -8,6 +8,8 @@ use App\Urls\SoundCloudUrl;
 
 class SoundCloudParse implements ParseInterface
 {
+    const PATTERN = '/soundcloud:users:()\d+/';
+
     private $urlHelper;
 
     private $client;
@@ -32,20 +34,19 @@ class SoundCloudParse implements ParseInterface
         return $promise->wait();
     }
 
-    private function getBaseParams(): string
+    private function getArtistId(): string
     {
-        $pattern = '/soundcloud:users:()\d+/';
-        $baseUrl = $this->urlHelper->getBaseUrl($this->actor);
+        $baseUrl = $this->urlHelper->getArtistBaseUrl($this->actor);
         $params = $this->sendRequest($baseUrl);;
-        preg_match($pattern, $params, $key);
+        preg_match(self::PATTERN, $params, $key);
 
         return trim($key[0], 'soundcloud://users:');
     }
 
     private function getTrack(): array
     {
-        $params = $this->getBaseParams();
-        $firstUrl = $this->urlHelper->getFirstUrl($params);
+        $params = $this->getArtistId();
+        $firstUrl = $this->urlHelper->getFirstCollectionTracksUrl($params);
         $finds = $this->sendRequest($firstUrl);
 
         return json_decode($finds, true);
@@ -73,7 +74,7 @@ class SoundCloudParse implements ParseInterface
                 ];
             }
             $nextHref = $nodes["next_href"];
-            $nextUrl = $this->urlHelper->getNextUrl($nextHref);
+            $nextUrl = $this->urlHelper->getNextCollectionTracksUrl($nextHref);
             $nextTrack = $this->sendRequest($nextUrl);
             $nodes = json_decode($nextTrack, true);
 

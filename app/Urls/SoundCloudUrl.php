@@ -13,19 +13,19 @@ class SoundCloudUrl
 
     private string $url;
 
-    public function getBaseUrl(string $actor): string
+    public function getArtistBaseUrl(string $artist): string
     {
-        $this->url = self::BASE_SOUND_CLOUD_URL . $actor;
+        $this->url = self::BASE_SOUND_CLOUD_URL . $artist;
         return $this->url;
     }
 
-    public function getFirstUrl(string $param): string
+    public function getFirstCollectionTracksUrl(string $param): string
     {
         $this->url = self::FIRST_PART_URL . $param . self::SECOND_PART_URL . self::THIRD_PART_URL . getenv('CLIENT_ID');
         return $this->url;
     }
 
-    public function getNextUrl(string $params): string
+    public function getNextCollectionTracksUrl(string $params): string
     {
         $this->url = $params . getenv('CLIENT_ID');
         return $this->url;
