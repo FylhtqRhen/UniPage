@@ -1,38 +1,41 @@
 <?php
 
-namespace app;
+namespace App;
 
-use Databases\DBHelper;
+use App\DBConnection;
 
 class Saver
 {
+    private $error;
+    private $artistId;
+    private $connect;
 
-    private array $error;
-    private int $artistId;
-    private DBHelper $connect;
-
-    public function __construct()
+    public function __construct(\PDO $connect)
     {
-        $this->connect = DBHelper::getConnect();
+        $this->connect = $connect;
     }
 
-    public function saveArtist($artist)
+    public function saveArtist(array $artist): void
     {
         $this->artistId = $artist['id'];
-        $fields = implode(',', array_keys($artist));
-        $values = implode(',', $artist);
 
-        if ($this->checkArtist($artist)) {
+        $fields = implode(', ', array_keys($artist));
+        $values = array_map(function ($value) {
+            return "'{$value}'";
+        }, $artist);
+        $values = implode(', ', $values);
+
+        if ($this->existsArtist($artist['id'])) {
             $this->updateArtist($artist);
         } else {
-            "INSERT INTO media_artists FIELDS $fields VALUES $values";
+            $this->connect->query("INSERT INTO media_artists ({$fields}) VALUES ({$values})");
         }
     }
 
-    public function saveAllTrack(array $tracks)
+    public function saveAllTrack(array $tracks): void
     {
         foreach ($tracks as $track) {
-            if (!$this->checkTrack($track)) {
+            if (!$this->existsTrack($track['id'])) {
                 $this->saveTrack($track, $this->artistId);
             } else {
                 $this->error['tracks'][] = $track;
@@ -40,38 +43,43 @@ class Saver
         }
     }
 
-    private function checkTrack(mixed $track): bool
+    private function saveTrack(array $track, string $artistId): void
     {
-        $name = $track['name'];
-        if ("SELECT * FROM media_tracks WHERE name = $name") {
-            return true;
-        }  else return false;
+        $fields = implode(', ', array_keys($track));
+
+        $values = array_map(function ($value) {
+            return "'{$value}'";
+        }, $track);
+        $values = implode(', ', $values);
+
+        $this->connect->query("INSERT INTO media_tracks (artist_id,{$fields}) VALUES ({$artistId}, {$values})");
     }
 
-    private function checkArtist($artist): string
+    private function existsRecords(string $table, $column, $value): bool
     {
-        return "SELECT * FROM media_artists WHERE username = $artist";
-    }
+        $result = $this->connect->query("SELECT count(*) FROM {$table} WHERE {$column} = '{$value}'");
 
-    private function updateArtist($artist): void
-    {
-        foreach ($artist as $key => $value){
-            "UPDATE media_artists SET $artist[$key] = $value";
+        if ($result->fetchColumn() === 0) {
+            return false;
         }
+
+        return true;
     }
 
-    public function saveTrack($track, $artistId)
+    private function existsTrack(string $track): bool
     {
-        $fields = implode(',', array_keys($track));
-        $values = implode(',', $track);
-        $a = "INSERT INTO tracks FIELDS (artist_id,$fields) VALUES ($artistId,$values)";
-        if (!$a) {
-            $this->error['save'][] = $track['name'];
+        return $this->existsRecords('media_tracks', 'id', $track);
+    }
+
+    private function existsArtist(string $artist): bool
+    {
+        return $this->existsRecords('media_artists', 'id', $artist);
+    }
+
+    private function updateArtist(array $artist): void
+    {
+        foreach ($artist as $key => $value) {
+            $this->connect->query("UPDATE media_artists SET {$key} = '{$value}'");
         }
-    }
-
-    public function normalizeErrors()
-    {
-
     }
 }

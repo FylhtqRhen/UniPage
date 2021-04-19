@@ -1,27 +1,26 @@
 <?php
 
-namespace app\parsers;
+namespace App\Parsers;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use Helpers\Parsers\ParseInterface;
-use Helpers\Urls\SoundCloudUrl;
+use App\Urls\SoundCloudUrl;
 
 class SoundCloudParse implements ParseInterface
 {
-    private SoundCloudUrl $urlHelper;
+    private $urlHelper;
 
-    private Client $client;
+    private $client;
 
-    private string $actor;
+    private $actor;
 
-    private array $tracks;
+    private $tracks = [];
 
-    public function __construct($actor)
+    public function __construct(string $actor, SoundCloudUrl $urlHelper, Client $client)
     {
         $this->actor = $actor;
-        $this->client = new Client();
-        $this->urlHelper = new SoundCloudUrl();
+        $this->urlHelper = $urlHelper;
+        $this->client = $client;
     }
 
     private function sendRequest(string $url)
@@ -37,8 +36,7 @@ class SoundCloudParse implements ParseInterface
     {
         $pattern = '/soundcloud:users:()\d+/';
         $baseUrl = $this->urlHelper->getBaseUrl($this->actor);
-        $promise = $this->sendRequest($baseUrl);
-        $params = $promise->wait();
+        $params = $this->sendRequest($baseUrl);;
         preg_match($pattern, $params, $key);
 
         return trim($key[0], 'soundcloud://users:');
@@ -48,23 +46,23 @@ class SoundCloudParse implements ParseInterface
     {
         $params = $this->getBaseParams();
         $firstUrl = $this->urlHelper->getFirstUrl($params);
-        $finds = $this->sendRequest($firstUrl)->wait();
+        $finds = $this->sendRequest($firstUrl);
 
         return json_decode($finds, true);
     }
 
-    public function getActorData(): array
+    public function getArtistData(): array
     {
         return $this->getTrack()["collection"][0]['user'];
     }
 
-    public function getTrackData(): array
+    public function getTracksData(): array
     {
         $nodes = $this->getTrack();
         do {
             foreach ($nodes["collection"] as $node) {
                 $this->tracks[] = [
-                    $node["title"] => [
+                        "id" => $node["id"],
                         "name" => $node["title"],
                         "created_at" => $node["created_at"],
                         "genre" => $node["genre"],
@@ -72,12 +70,11 @@ class SoundCloudParse implements ParseInterface
                         "state" => $node["state"],
                         "track_format" => $node["track_format"],
                         "uri" => $node["uri"],
-                    ]
                 ];
             }
             $nextHref = $nodes["next_href"];
             $nextUrl = $this->urlHelper->getNextUrl($nextHref);
-            $nextTrack = $this->sendRequest($nextUrl)->wait();
+            $nextTrack = $this->sendRequest($nextUrl);
             $nodes = json_decode($nextTrack, true);
 
         } while ($nodes["next_href"]);
