@@ -7,7 +7,7 @@ use App\DBConnection;
 class Saver
 {
     private $error;
-    private $artistId;
+
     private $connect;
 
     public function __construct(\PDO $connect)
@@ -17,69 +17,70 @@ class Saver
 
     public function saveArtist(array $artist): void
     {
-        $this->artistId = $artist['id'];
-
-        $fields = implode(', ', array_keys($artist));
-        $values = array_map(function ($value) {
-            return "'{$value}'";
-        }, $artist);
-        $values = implode(', ', $values);
-
         if ($this->existsArtist($artist['id'])) {
-            $this->updateArtist($artist);
+            $sql = "UPDATE media_artists SET 
+                        avatar_url = :avatar_url,
+                        first_name = :first_name,
+                        followers_count = :followers_count,
+                        full_name = :full_name,
+                        id = :id,
+                        kind = :kind,
+                        last_modified = :last_modified,
+                        last_name = :last_name,
+                        permalink = :permalink,
+                        permalink_url = :permalink_url,
+                        uri = :uri,
+                        urn = :urn,
+                        username = :username,
+                        verified = :verified,
+                        city = :city,
+                        country_code = :country_code,
+                        station_permalink = :station_permalink";
+            $query = $this->connect->prepare($sql);
+            $query->execute($artist);
         } else {
-            $this->connect->query("INSERT INTO media_artists ({$fields}) VALUES ({$values})");
+            $sql = "INSERT INTO `media_artists` (avatar_url, first_name, followers_count, full_name, id, kind, last_modified, last_name, permalink, permalink_url, uri, urn, username, verified, city, country_code, station_permalink)
+                    VALUES (:avatar_url, :first_name, :followers_count, :full_name, :id, :kind, :last_modified, :last_name, :permalink, :permalink_url, :uri, :urn, :username, :verified, :city, :country_code, :station_permalink)";
+            $query = $this->connect->prepare($sql);
+            $query->execute($artist);
         }
     }
 
-    public function saveAllTrack(array $tracks): void
+    public function saveTracks(array $tracks): void
     {
         foreach ($tracks as $track) {
             if (!$this->existsTrack($track['id'])) {
-                $this->saveTrack($track, $this->artistId);
+                $sql = "INSERT INTO `media_tracks` (artist_id, id, track_name, created_at, genre, display_date, track_state, track_format, uri) 
+                        VALUES (:artist_id,  :id, :track_name, :created_at, :genre, :display_date, :track_state, :track_format, :uri)";
+                $query = $this->connect->prepare($sql);
+                $query->execute($track);
             } else {
-                $this->error['tracks'][] = $track;
+                $this->error['tracks'][] = $track['track_name'] . ' уже есть в базе';
             }
         }
+        var_dump($this->error);
     }
 
-    private function saveTrack(array $track, string $artistId): void
+    private function existsRecords(string $table, int $id): bool
     {
-        $fields = implode(', ', array_keys($track));
-
-        $values = array_map(function ($value) {
-            return "'{$value}'";
-        }, $track);
-        $values = implode(', ', $values);
-
-        $this->connect->query("INSERT INTO media_tracks (artist_id,{$fields}) VALUES ({$artistId}, {$values})");
-    }
-
-    private function existsRecords(string $table, $column, $value): bool
-    {
-        $result = $this->connect->query("SELECT count(*) FROM {$table} WHERE {$column} = '{$value}'");
-
-        if ($result->fetchColumn() === 0) {
+        $sql = "SELECT count(*) FROM {$table} WHERE `id` = :id";
+        $query = $this->connect->prepare($sql);
+        $query->bindParam(':id', $id, \PDO::PARAM_INT);
+        $query->execute();
+        $result = $query->fetch();
+        if ($result['count(*)'] == 0) {
             return false;
         }
-
         return true;
     }
 
-    private function existsTrack(string $track): bool
+    private function existsTrack(int $track): bool
     {
-        return $this->existsRecords('media_tracks', 'id', $track);
+        return $this->existsRecords('media_tracks', $track);
     }
 
-    private function existsArtist(string $artist): bool
+    private function existsArtist(int $artist): bool
     {
-        return $this->existsRecords('media_artists', 'id', $artist);
-    }
-
-    private function updateArtist(array $artist): void
-    {
-        foreach ($artist as $key => $value) {
-            $this->connect->query("UPDATE media_artists SET {$key} = '{$value}'");
-        }
+        return $this->existsRecords('media_artists', $artist);
     }
 }

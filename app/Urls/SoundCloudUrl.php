@@ -11,7 +11,7 @@ class SoundCloudUrl
     const SECOND_PART_URL = '/tracks?representation=';
     const THIRD_PART_URL = '&limit=20&offset=0&linked_partitioning=1&app_version=1618476442&app_locale=en%5Bobject%20Object%5D';
 
-    private string $url;
+    private $url;
 
     public function getArtistBaseUrl(string $artist): string
     {

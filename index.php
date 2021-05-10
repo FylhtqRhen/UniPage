@@ -23,9 +23,10 @@ $artist = $parser->getArtistData();
 $tracks = $parser->getTracksData();
 
 
-
 //example saver usage
+
+
 $connection = DBConnection::get();
 $result = new Saver($connection);
 $result->saveArtist($artist);
-$result->saveAllTrack($tracks);
+$result->saveTracks($tracks);
