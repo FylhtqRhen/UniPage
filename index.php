@@ -12,7 +12,7 @@ use App\Parsers\SoundCloudParse;
 
 require_once 'vendor/autoload.php';
 
-$parser = new Parser(new App\console\Helper(), DBConnection::get(), new SoundCloudParse());
+$parser = new Parser(new App\Console\Helper(), DBConnection::get(), new SoundCloudParse());
 
 $parser->parse();
 $parser->save();

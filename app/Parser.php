@@ -1,24 +1,43 @@
 <?php
 
-
 namespace App;
 
 use App\Parsers\ParseInterface;
-use App\Saver;
-use App\console\Helper;
+use App\Console\Helper;
 
 class Parser
 {
+    /**
+     * @var string
+     */
     private $artist;
 
+    /**
+     * @var array
+     */
     private $artistData;
 
+    /**
+     * @var array
+     */
     private $tracksData;
 
+    /**
+     * @var \PDO
+     */
     private $connection;
 
+    /**
+     * @var ParseInterface
+     */
     private $parser;
 
+    /**
+     * Parser constructor.
+     * @param Helper $artist
+     * @param \PDO $connection
+     * @param ParseInterface $parser
+     */
     public function __construct(Helper $artist, \PDO $connection, ParseInterface $parser)
     {
         $this->artist = $artist->input();
@@ -26,6 +45,9 @@ class Parser
         $this->parser = $parser;
     }
 
+    /**
+     *
+     */
     public function parse(): void
     {
         $this->parser->setArtist($this->artist);
@@ -33,6 +55,9 @@ class Parser
         $this->tracksData = $this->parser->getTracksData();
     }
 
+    /**
+     *
+     */
     public function save(): void
     {
         $result = new Saver($this->connection);
