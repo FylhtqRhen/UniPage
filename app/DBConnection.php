@@ -18,11 +18,14 @@ class DBConnection
         $password = getenv('DB_PASSWORD');
         $host = getenv('DB_HOST');
         $opt = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+           // PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-//            PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-       self::$connect = new PDO("$bd:host=$host;dbname=$dbName", $name, $password, $opt);
+        try {
+            self::$connect = new PDO("$bd:host=$host;dbname=$dbName", $name, $password, $opt);
+        } catch (\PDOException $e) {
+            die('Подключение не удалось: ');
+        }
     }
 
     public static function get(): PDO

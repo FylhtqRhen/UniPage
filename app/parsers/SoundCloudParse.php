@@ -2,9 +2,12 @@
 
 namespace App\Parsers;
 
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use App\Urls\SoundCloudUrl;
+use Psr\Http\Message\ResponseInterface;
 
 class SoundCloudParse implements ParseInterface
 {
@@ -27,35 +30,37 @@ class SoundCloudParse implements ParseInterface
 
     public function getArtistData(): array
     {
+        $this->checkArtist();
         $node = $this->getTrack()["collection"][0]['user'];
-
-        $artistData = [
-            'avatar_url' => $node['avatar_url'],
-            'first_name' => $node['first_name'],
-            'followers_count' => $node['followers_count'],
-            'full_name' => $node['full_name'],
-            'id' => $node['id'],
-            'kind' => $node['kind'],
-            'last_modified' => $node['last_modified'],
-            'last_name' => $node['last_name'],
-            'permalink' => $node['permalink'],
-            'permalink_url' => $node['permalink_url'],
-            'uri' => $node['uri'],
-            'urn' => $node['urn'],
-            'username' => $node['username'],
-            'verified' => $node['verified'],
-            'city' => $node['city'],
-            'country_code' => $node['country_code'],
-            'station_permalink' => $node['station_permalink']
+        $a = [
+            'avatar_url',
+            'first_name',
+            'followers_count',
+            'full_name',
+            'id',
+            'kind',
+            'last_modified',
+            'last_name',
+            'permalink',
+            'permalink_url',
+            'uri',
+            'urn',
+            'username',
+            'verified',
+            'city',
+            'country_code',
+            'station_permalink',
         ];
-        return $artistData;
+
+        return array_intersect_key($node, array_flip($a));
     }
 
     public function getTracksData(): array
     {
+        $this->checkArtist();
+
         $nodes = $this->getTrack();
         do {
-
             foreach ($nodes["collection"] as $node) {
                 $this->tracks[] = [
                     "artist_id" => $node["user_id"],
@@ -80,7 +85,7 @@ class SoundCloudParse implements ParseInterface
     private function getArtistId(): string
     {
         $baseUrl = $this->urlHelper->getArtistBaseUrl($this->artist);
-        $params = $this->sendRequest($baseUrl);;
+        $params = $this->sendRequest($baseUrl);
         preg_match(self::PATTERN, $params, $key);
         return trim($key[0], 'soundcloud://users:');
     }
@@ -100,5 +105,21 @@ class SoundCloudParse implements ParseInterface
             return $response->getBody()->getContents();
         });
         return $promise->wait();
+    }
+
+    private function checkArtist()
+    {
+        $promise = $this->client->requestAsync('GET', $this->urlHelper->getArtistBaseUrl($this->artist));
+        $promise
+            ->then(function (RequestException $e) {
+                throw $e;
+            })
+            ->then(
+                function ($someVal) {
+                },
+                function (RequestException $e) {
+                    echo $e = 'Имя артиста введено неверно';
+                    die();
+                });
     }
 }

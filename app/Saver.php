@@ -36,14 +36,15 @@ class Saver
                         city = :city,
                         country_code = :country_code,
                         station_permalink = :station_permalink";
-            $query = $this->connect->prepare($sql);
-            $query->execute($artist);
+            $this->error['artist'][] = $artist['full_name'] . ' успешно обновлен';
         } else {
             $sql = "INSERT INTO `media_artists` (avatar_url, first_name, followers_count, full_name, id, kind, last_modified, last_name, permalink, permalink_url, uri, urn, username, verified, city, country_code, station_permalink)
                     VALUES (:avatar_url, :first_name, :followers_count, :full_name, :id, :kind, :last_modified, :last_name, :permalink, :permalink_url, :uri, :urn, :username, :verified, :city, :country_code, :station_permalink)";
-            $query = $this->connect->prepare($sql);
-            $query->execute($artist);
+            $this->error['artist'][] = $artist['full_name'] . ' успешно сохранен';
         }
+        $query = $this->connect->prepare($sql);
+        $query->execute($artist);
+        echo ('Артист ' . $this->error['artist'][0] . PHP_EOL);
     }
 
     public function saveTracks(array $tracks): void
@@ -52,13 +53,16 @@ class Saver
             if (!$this->existsTrack($track['id'])) {
                 $sql = "INSERT INTO `media_tracks` (artist_id, id, track_name, created_at, genre, display_date, track_state, track_format, uri) 
                         VALUES (:artist_id,  :id, :track_name, :created_at, :genre, :display_date, :track_state, :track_format, :uri)";
-                $query = $this->connect->prepare($sql);
-                $query->execute($track);
+                $this->error['tracks'][] = $track['track_name'] . ' успешно сохранен';
             } else {
                 $this->error['tracks'][] = $track['track_name'] . ' уже есть в базе';
             }
         }
-        var_dump($this->error);
+        $query = $this->connect->prepare($sql);
+        $query->execute($tracks);
+        foreach ($this->error['tracks'] as $track) {
+            echo 'Трек ' . $track . PHP_EOL;
+        }
     }
 
     private function existsRecords(string $table, int $id): bool

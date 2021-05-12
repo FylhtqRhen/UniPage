@@ -8,25 +8,31 @@ foreach ($vars as $var) {
 
 require_once 'vendor/autoload.php';
 
-use App\Parsers\SoundCloudParse;
-use App\Saver;
-use App\DBConnection;
-use App\Urls\SoundCloudUrl;
-use GuzzleHttp\Client;
+$parser = new \App\Parser();
 
-//example parser usage
+$parser->parse();
+$parser->save();
 
-$artist = 'lakeyinspired';
+die();
 
-$parser = new SoundCloudParse($artist, new SoundCloudUrl(), new Client());
-$artist = $parser->getArtistData();
-$tracks = $parser->getTracksData();
+//
+//
+//$artist = (new App\console\Helper)->input();
+//
+////$artist = 'lakeyinspired';
+//
+//$parser = new SoundCloudParse($artist, new SoundCloudUrl(), new Client());
+//
+//$artist = $parser->getArtistData();
+//$tracks = $parser->getTracksData();
+//
+//$connection = DBConnection::get();
+//$result = new Saver($connection);
+//$result->saveArtist($artist);
+//$result->saveTracks($tracks);
+//
+//
 
 
-//example saver usage
 
 
-$connection = DBConnection::get();
-$result = new Saver($connection);
-$result->saveArtist($artist);
-$result->saveTracks($tracks);

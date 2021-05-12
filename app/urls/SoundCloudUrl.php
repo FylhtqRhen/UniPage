@@ -1,14 +1,18 @@
 <?php
 
-namespace App\Urls;
+namespace App\urls;
 
+use Exception;
 use GuzzleHttp\Client;
 
 class SoundCloudUrl
 {
     const BASE_SOUND_CLOUD_URL = "https://soundcloud.com/";
+
     const FIRST_PART_URL = 'https://api-v2.soundcloud.com/users/';
+
     const SECOND_PART_URL = '/tracks?representation=';
+
     const THIRD_PART_URL = '&limit=20&offset=0&linked_partitioning=1&app_version=1618476442&app_locale=en%5Bobject%20Object%5D';
 
     private $url;
