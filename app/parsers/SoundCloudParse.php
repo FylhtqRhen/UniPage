@@ -77,7 +77,7 @@ class SoundCloudParse implements ParseInterface
         return $this->tracks;
     }
 
-    public function setArtist(string $artist)
+    public function setArtist(string $artist): void
     {
         $this->artist = $artist;
     }
@@ -107,7 +107,7 @@ class SoundCloudParse implements ParseInterface
         return $promise->wait();
     }
 
-    private function checkArtist()
+    private function checkArtist(): void
     {
         $promise = $this->client->requestAsync('GET', $this->urlHelper->getArtistBaseUrl($this->artist));
         $promise
