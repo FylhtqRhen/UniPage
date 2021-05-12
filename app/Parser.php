@@ -3,31 +3,32 @@
 
 namespace App;
 
-use App\Parsers\SoundCloudParse;
+use App\Parsers\ParseInterface;
 use App\Saver;
-use App\DBConnection;
-use App\Urls\SoundCloudUrl;
-use GuzzleHttp\Client;
 use App\console\Helper;
-
 
 class Parser
 {
     private $artist;
+
     private $artistData;
+
     private $tracksData;
+
     private $connection;
+
     private $parser;
 
-    public function __construct()
+    public function __construct(Helper $artist, \PDO $connection, ParseInterface $parser)
     {
-        $this->artist = (new console\Helper)->input();
-        $this->connection = DBConnection::get();
-        $this->parser = new SoundCloudParse($this->artist, new SoundCloudUrl(), new Client());
+        $this->artist = $artist->input();
+        $this->connection = $connection;
+        $this->parser = $parser;
     }
 
     public function parse(): void
     {
+        $this->parser->setArtist($this->artist);
         $this->artistData = $this->parser->getArtistData();
         $this->tracksData = $this->parser->getTracksData();
     }

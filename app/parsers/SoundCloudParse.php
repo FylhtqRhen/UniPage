@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Parsers;
+namespace App\parsers;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use App\Urls\SoundCloudUrl;
-use Psr\Http\Message\ResponseInterface;
 
 class SoundCloudParse implements ParseInterface
 {
@@ -21,11 +19,10 @@ class SoundCloudParse implements ParseInterface
 
     private $tracks = [];
 
-    public function __construct(string $artist, SoundCloudUrl $urlHelper, Client $client)
+    public function __construct()
     {
-        $this->artist = $artist;
-        $this->urlHelper = $urlHelper;
-        $this->client = $client;
+        $this->urlHelper = new SoundCloudUrl;
+        $this->client = new Client;
     }
 
     public function getArtistData(): array
@@ -51,14 +48,12 @@ class SoundCloudParse implements ParseInterface
             'country_code',
             'station_permalink',
         ];
-
         return array_intersect_key($node, array_flip($a));
     }
 
     public function getTracksData(): array
     {
         $this->checkArtist();
-
         $nodes = $this->getTrack();
         do {
             foreach ($nodes["collection"] as $node) {
@@ -80,6 +75,11 @@ class SoundCloudParse implements ParseInterface
             $nodes = json_decode($nextTrack, true);
         } while ($nodes["next_href"]);
         return $this->tracks;
+    }
+
+    public function setArtist(string $artist)
+    {
+        $this->artist = $artist;
     }
 
     private function getArtistId(): string
@@ -111,14 +111,16 @@ class SoundCloudParse implements ParseInterface
     {
         $promise = $this->client->requestAsync('GET', $this->urlHelper->getArtistBaseUrl($this->artist));
         $promise
-            ->then(function (RequestException $e) {
-                throw $e;
-            })
+            ->then(
+                function (RequestException $e) {
+                    throw $e;
+                }
+            )
             ->then(
                 function ($someVal) {
                 },
                 function (RequestException $e) {
-                    echo $e = 'Имя артиста введено неверно';
+                    echo 'Имя артиста введено неверно';
                     die();
                 });
     }

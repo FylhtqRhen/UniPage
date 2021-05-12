@@ -2,9 +2,6 @@
 
 namespace App\urls;
 
-use Exception;
-use GuzzleHttp\Client;
-
 class SoundCloudUrl
 {
     const BASE_SOUND_CLOUD_URL = "https://soundcloud.com/";

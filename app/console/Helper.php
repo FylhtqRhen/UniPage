@@ -7,6 +7,7 @@ namespace App\console;
 class Helper
 {
     private $input;
+
     private $output;
 
     public function __construct()

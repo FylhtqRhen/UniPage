@@ -13,12 +13,11 @@ CREATE TABLE `media_artists` (
                                  `uri` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                                  `urn` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                                  `username` text COLLATE utf8mb4_unicode_ci NOT NULL,
-                                 `verified` tinyint(1) DEFAULT NULL,
+                                 `verified` int(11) DEFAULT NULL,
                                  `city` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                                  `country_code` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-                                 `badges` text COLLATE utf8mb4_unicode_ci DEFAULT NULL
+                                 `station_permalink` varchar(256) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 CREATE TABLE `media_tracks` (
                                 `id` int(11) NOT NULL,
@@ -32,10 +31,20 @@ CREATE TABLE `media_tracks` (
                                 `uri` text COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE `media_artists`
+    ADD PRIMARY KEY (`id`);
+
 ALTER TABLE `media_tracks`
     ADD PRIMARY KEY (`id`);
 
-
 ALTER TABLE `media_tracks`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+    MODIFY `id` int(11);
+
+ALTER TABLE media_tracks
+    ADD CONSTRAINT track_id_artist_id
+        FOREIGN KEY (`artist_id`)
+            REFERENCES media_artists (id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE;
+
 COMMIT;

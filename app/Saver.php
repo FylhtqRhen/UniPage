@@ -2,8 +2,6 @@
 
 namespace App;
 
-use App\DBConnection;
-
 class Saver
 {
     private $error;
