@@ -1,19 +1,16 @@
 <?php
 
-function exception_handler($exception)
-{
+use App\Handles\Exception\BaseException;
+use GuzzleHttp\Exception\ClientException;
 
-    $class = get_class($exception);
-    switch ($class) {
-        case ('GuzzleHttp\Exception\ClientException') :
-            echo 'Неверно введено имя артиста, проверьте ввод';
-            break;
-        case ('ArtistException.php') :
-            echo 'Ошибка при сохранении артиста';
-            break;
-        case ('TrackException.php') :
-            echo 'Ошибка при сохранении трека ';
-            break;
+function exceptionHandler($exception)
+{
+    if ($exception instanceof BaseException) {
+        echo $exception->getMessage();
+    } elseif ($exception instanceof ClientException) {
+        echo 'Неверно введено имя артиста, проверьте ввод';
+    } else {
+        echo 'Непредвиденная ошибка';
     }
 }
-set_exception_handler('exception_handler');
+set_exception_handler('exceptionHandler');
