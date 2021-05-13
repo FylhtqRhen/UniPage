@@ -45,7 +45,7 @@ class SoundCloudParse implements ParseInterface
      */
     public function getArtistData(): array
     {
-        $this->checkArtist();
+//        $this->checkArtist();
 
         $node = $this->getTrack()["collection"][0]['user'];
         if ($node) {
@@ -80,7 +80,7 @@ class SoundCloudParse implements ParseInterface
      */
     public function getTracksData(): array
     {
-        $this->checkArtist();
+//        $this->checkArtist();
         $nodes = $this->getTrack();
 
         do {
@@ -155,14 +155,13 @@ class SoundCloudParse implements ParseInterface
     /**
      *
      */
-    private function checkArtist(): void
-    {
-        $promise = $this->client->requestAsync('GET', $this->urlHelper->getArtistBaseUrl($this->artist));
-        $promise
-            ->then(
-                function (RequestException $e) {
-                    throw new RequestException();
-                }
-            );
-    }
+//    private function checkArtist(): void
+//    {
+//        $promise = $this->client->requestAsync('GET', $this->urlHelper->getArtistBaseUrl($this->artist));
+//        $promise
+//            ->then(
+//                function (RequestException $e) {
+//                    throw new \RequestException();
+//                });
+//    }
 }

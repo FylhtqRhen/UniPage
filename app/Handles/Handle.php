@@ -8,9 +8,9 @@ function exceptionHandler($exception)
     if ($exception instanceof BaseException) {
         echo $exception->getMessage();
     } elseif ($exception instanceof ClientException) {
-        echo 'Неверно введено имя артиста, проверьте ввод';
+        echo 'Ошибка при обработке';
     } else {
-        echo 'Непредвиденная ошибка';
+        echo 'Неверно введено имя артиста, проверьте ввод';
     }
 }
 set_exception_handler('exceptionHandler');
