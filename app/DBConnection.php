@@ -30,11 +30,7 @@ class DBConnection
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ];
-        try {
-            self::$connect = new PDO("$bd:host=$host;dbname=$dbName", $name, $password, $opt);
-        } catch (\PDOException $e) {
-            die('Подключение к базе данных не удалось, проверьте настройки .env');
-        }
+        self::$connect = new PDO("$bd:host=$host;dbname=$dbName", $name, $password, $opt);
     }
 
     /**

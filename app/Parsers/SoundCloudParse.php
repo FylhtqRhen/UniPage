@@ -69,8 +69,7 @@ class SoundCloudParse implements ParseInterface
                 'station_permalink'
             ];
         } else {
-            echo 'Это не артист, а пользователь';
-            die();
+            throw new \Exception('Введено имя пользователя, но не артиста. Проверьте имя');
         }
 
         return array_intersect_key($node, array_flip($artist));
@@ -162,15 +161,8 @@ class SoundCloudParse implements ParseInterface
         $promise
             ->then(
                 function (RequestException $e) {
-                    throw $e;
+                    throw new RequestException();
                 }
-            )
-            ->then(
-                function ($someVal) {
-                },
-                function (RequestException $e) {
-                    echo 'Имя артиста введено неверно';
-                    die();
-                });
+            );
     }
 }

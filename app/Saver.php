@@ -2,13 +2,11 @@
 
 namespace App;
 
+use App\Handles\Exception\ArtistException;
+use App\Handles\Exception\TrackException;
+
 class Saver
 {
-    /**
-     * @var
-     */
-    private $error;
-
     /**
      * @var \PDO
      */
@@ -29,8 +27,9 @@ class Saver
      */
     public function saveArtist(array $artist): void
     {
-        if ($this->existsArtist($artist['id'])) {
-            $sql = "UPDATE media_artists SET 
+        $sql = "INSERT INTO `media_artists` (avatar_url, first_name, followers_count, full_name, id, kind, last_modified, last_name, permalink, permalink_url, uri, urn, username, verified, city, country_code, station_permalink)
+                    VALUES (:avatar_url, :first_name, :followers_count, :full_name, :id, :kind, :last_modified, :last_name, :permalink, :permalink_url, :uri, :urn, :username, :verified, :city, :country_code, :station_permalink)
+                    ON DUPLICATE KEY UPDATE 
                         avatar_url = :avatar_url,
                         first_name = :first_name,
                         followers_count = :followers_count,
@@ -47,16 +46,10 @@ class Saver
                         city = :city,
                         country_code = :country_code,
                         station_permalink = :station_permalink";
-            $this->error['artist'][] = $artist['username'] . ' успешно обновлен';
-            unset($artist['id']);
-        } else {
-            $sql = "INSERT INTO `media_artists` (avatar_url, first_name, followers_count, full_name, id, kind, last_modified, last_name, permalink, permalink_url, uri, urn, username, verified, city, country_code, station_permalink)
-                    VALUES (:avatar_url, :first_name, :followers_count, :full_name, :id, :kind, :last_modified, :last_name, :permalink, :permalink_url, :uri, :urn, :username, :verified, :city, :country_code, :station_permalink)";
-            $this->error['artist'][] = $artist['username'] . ' успешно сохранен';
-        }
         $query = $this->connect->prepare($sql);
-        $query->execute($artist);
-        echo $this->error['artist'][0] . PHP_EOL;
+        if (!$query->execute($artist)) {
+            throw new ArtistException();
+        }
     }
 
     /**
@@ -65,21 +58,20 @@ class Saver
     public function saveTracks(array $tracks): void
     {
         foreach ($tracks as $track) {
-            if (!$this->existsTrack($track['id'])) {
-                $sql = "INSERT INTO `media_tracks` (artist_id, id, track_name, created_at, genre, display_date, track_state, track_format, uri) 
-                        VALUES (:artist_id, :id, :track_name, :created_at, :genre, :display_date, :track_state, :track_format, :uri)";
-                $this->error['tracks'][] = $track['track_name'] . ' успешно сохранен';
-                $query = $this->connect->prepare($sql);
-                if ($query->execute($track) == null) {
-                    echo 'какая то херня';
-                    die();
-                }
-            } else {
-                $this->error['tracks'][] = $track['track_name'] . ' уже есть в базе';
+            $sql = "INSERT INTO `media_tracks` (artist_id, id, track_name, created_at, genre, display_date, track_state, track_format, uri) 
+                        VALUES (:artist_id, :id, :track_name, :created_at, :genre, :display_date, :track_state, :track_format, :uri)
+                        ON DUPLICATE KEY UPDATE 
+                        track_name = :track_name,
+                        created_at = :created_at,
+                        genre = :genre,
+                        display_date = :display_date,
+                        track_state = :track_state,
+                        track_format = :track_format,
+                        uri = :uri";
+            $query = $this->connect->prepare($sql);
+            if (!$query->execute($track)) {
+                throw new TrackException();
             }
-        }
-        foreach ($this->error['tracks'] as $track) {
-            echo 'Трек ' . $track . PHP_EOL;
         }
     }
 
@@ -100,23 +92,5 @@ class Saver
         }
 
         return true;
-    }
-
-    /**
-     * @param int $track
-     * @return bool
-     */
-    private function existsTrack(int $track): bool
-    {
-        return $this->existsRecords('media_tracks', $track);
-    }
-
-    /**
-     * @param int $artist
-     * @return bool
-     */
-    private function existsArtist(int $artist): bool
-    {
-        return $this->existsRecords('media_artists', $artist);
     }
 }
